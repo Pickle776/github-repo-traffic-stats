@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Traffic Dashboard</title>
+    <title>Pickle776 GitHub Traffic Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script defer data-domain="piebro.github.io/github-repo-traffic-stats" src="https://plausible.io/js/script.js"></script>
     <style>
         html {
             font-size: 14px;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #f6f8fa;
             text-align: center;
+            color: #24292f;
         }
         .charts-grid {
             display: flex;
@@ -28,15 +28,17 @@
         }
         .chart-container {
             flex: 1 1 calc(50% - 20px);
-            min-width: 300px;
+            min-width: 320px;
             max-width: 700px;
             background-color: white;
+            border: 1px solid #d0d7de;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(31,35,40,0.06);
             padding: 20px;
+            box-sizing: border-box;
         }
         h1, h2 {
-            color: #333;
+            color: #24292f;
         }
         select {
             margin: 10px 5px;
@@ -45,70 +47,88 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
             max-width: 1500px;
             margin: 0 auto;
         }
         .preview-item {
-            flex: 1 1 700px;
+            flex: 1 1 650px;
             max-width: 700px;
             cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(31,35,40,0.08);
+            overflow: hidden;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .preview-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31,35,40,0.15);
+            border-color: #0969da;
         }
         .preview-item img {
             width: 100%;
             height: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            display: block;
+        }
+        .preview-item .click-hint {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #0969da;
+            font-weight: 500;
         }
         #dashboardView {
             display: none;
         }
-        #backButton {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 15px;
-            background-color: #f0f0f0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #backButton:hover {
-            background-color: #e0e0e0;
-        }
-        .dashboard-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .dashboard-header h1 {
-            margin-right: 20px;
-        }
-        #timeRange {
-            font-size: 16px;
-            padding: 8px 12px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
         .dashboard-header {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding: 20px;
+            padding: 10px 20px 20px;
             position: relative;
+            max-width: 1500px;
+            margin: 0 auto;
         }
-
         #backButton {
-            position: static;
-            margin-bottom: 10px;
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #24292f;
+            margin-bottom: 12px;
+            transition: background 0.15s;
         }
-
+        #backButton:hover {
+            background-color: #f3f4f6;
+            border-color: #0969da;
+            color: #0969da;
+        }
         .repo-title {
-            margin-right: 20px;
+            margin: 0 20px 0 0;
             word-break: break-word;
+            font-size: 24px;
+        }
+        .repo-title a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        .repo-title a:hover {
+            text-decoration: underline;
+        }
+        #timeRange {
+            font-size: 15px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+            background: white;
+            cursor: pointer;
         }
 
         @media (min-width: 768px) {
@@ -116,41 +136,18 @@
                 flex-direction: row;
                 align-items: center;
             }
-
             #backButton {
-                position: absolute;
-                top: 20px;
-                left: 20px;
                 margin-bottom: 0;
-            }
-
-            .repo-title {
-                margin-left: 60px;
+                margin-right: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <h1 id="mainHeader"><a href="https://github.com/piebro">github.com/piebro</a>  traffic dashboard</h1>
+    <h1 id="mainHeader"><a id="ownerLink" href="https://github.com/Pickle776" target="_blank">github.com/Pickle776</a> traffic dashboard</h1>
+    
     <div id="previewView">
-        <div class="preview-grid">
-            <div class="preview-item"><img src="preview_plots/factorio-blueprint-visualizer.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/openstreetmap-statistics.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/deutsche-bahn-statistics.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/deutsche-bahn-data.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/plotting-maps.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/spotify-statistics.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/substitution-system.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/simple-website-change-detection.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/plotting-architecture.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/map2svg.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/piebro.github.io.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/generativeart.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/js-map-generator.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/plotting-ribbons.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/physarum-latent-walk.webp"/></div>
-            <div class="preview-item"><img src="preview_plots/simple-image-classification-labeling-website.webp"/></div>
-        </div>
+        <div class="preview-grid" id="previewGrid"></div>
     </div>
 
     <div id="dashboardView">
@@ -175,14 +172,12 @@
                 <h2>GitHub Clones</h2>
                 <canvas id="clonesChart"></canvas>
             </div>
-            
 
             <div class="chart-container">
                 <h2>Approximate Top GitHub Referrers</h2>
                 <canvas id="referrersChart"></canvas>
             </div>
-            
-            
+
             <div class="chart-container">
                 <h2>Approximate Top GitHub Paths</h2>
                 <canvas id="pathsChart"></canvas>
@@ -190,38 +185,45 @@
         </div>
     </div>
 
-    <p>
-        The code of this project can be found here: <a href="https://github.com/piebro/github-repo-traffic-stats">github.com/piebro/github-repo-traffic-stats</a>
+    <p style="margin-top: 40px; color: #57609a; font-size: 13px;">
+        Tracking repositories for <a href="https://github.com/Pickle776" target="_blank" style="color: #0969da;">Pickle776</a> automatically via GitHub Actions
     </p>
 
     <script>
-    const PIE_CHART_COLORS = [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)',
-        'rgba(255, 159, 64, 0.6)',
-        'rgba(199, 199, 199, 0.6)',
-        'rgba(83, 102, 255, 0.6)',  
-        'rgba(255, 99, 255, 0.6)',
-        'rgba(127, 127, 127, 0.6)',
-        'rgba(255, 0, 0, 0.6)',
-        'rgba(0, 255, 0, 0.6)',
-        'rgba(0, 0, 255, 0.6)',
-        'rgba(128, 0, 128, 0.6)',
-        'rgba(255, 165, 0, 0.6)',
-        'rgba(0, 128, 128, 0.6)'
-    ]
+    const OWNER = 'Pickle776';
+    const REPOSITORIES = [
+        "BookTracker",
+        "JWall",
+        "Kinetic",
+        "Live-Earth",
+        "SANParks-tracker",
+        "github-repo-traffic-stats"
+    ];
 
-    // Function to fetch and parse CSV
+    const PIE_CHART_COLORS = [
+        'rgba(255, 99, 132, 0.7)',
+        'rgba(54, 162, 235, 0.7)',
+        'rgba(255, 206, 86, 0.7)',
+        'rgba(75, 192, 192, 0.7)',
+        'rgba(153, 102, 255, 0.7)',
+        'rgba(255, 159, 64, 0.7)',
+        'rgba(199, 199, 199, 0.7)',
+        'rgba(83, 102, 255, 0.7)',  
+        'rgba(255, 99, 255, 0.7)',
+        'rgba(127, 127, 127, 0.7)'
+    ];
+
     async function fetchCSV(url) {
-        const response = await fetch(url);
-        const text = await response.text();
-        return Papa.parse(text, { header: true, dynamicTyping: true }).data;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return [];
+            const text = await response.text();
+            return Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true }).data;
+        } catch (e) {
+            return [];
+        }
     }
 
-    // Function to create a chart
     function createChart(elementId, type, data, options) {
         return new Chart(document.getElementById(elementId), {
             type: type,
@@ -231,30 +233,28 @@
     }
 
     let clonesChart, pathsChart, referrersChart, viewsChart;
-    let allClonesData, allPathsData, allReferrersData, allViewsData;
+    let allClonesData = [], allPathsData = [], allReferrersData = [], allViewsData = [];
+    let currentDataSource = REPOSITORIES[0];
+    let previewScrollPosition = 0;
 
     function addMissingDates(data, dateField) {
-        if (data.length === 0) return [];
-        
+        if (!data || data.length === 0) return [];
         const startDate = new Date(data[0][dateField]);
         const endDate = new Date();
         const dateRange = getDateRange(startDate, endDate);
         
-        // Create a lookup object for quick access
         const dataLookup = {};
         data.forEach(entry => {
-            dataLookup[entry[dateField]] = entry;
+            if (entry && entry[dateField]) dataLookup[entry[dateField]] = entry;
         });
         
-        const filledData = dateRange.map(date => {
+        return dateRange.map(date => {
             return dataLookup[date] || {
                 [dateField]: date,
                 count: 0,
                 uniques: 0
             };
         });
-        
-        return filledData;
     }
 
     function getDateRange(startDate, endDate) {
@@ -269,21 +269,15 @@
         return n === 'total' ? data : data.slice(-n);
     }
 
-    let currentDataSource = 'factorio-blueprint-visualizer';
-
-    // Modified loadDataAndCreateCharts function
     async function loadDataAndCreateCharts() {
-        // Load all data
         allClonesData = addMissingDates(await fetchCSV(`data/github_clones/${currentDataSource}.csv`), 'date');
         allPathsData = addMissingDates(await fetchCSV(`data/github_paths/${currentDataSource}.csv`), 'date');
         allReferrersData = addMissingDates(await fetchCSV(`data/github_referrers/${currentDataSource}.csv`), 'date');
         allViewsData = addMissingDates(await fetchCSV(`data/github_views/${currentDataSource}.csv`), 'date');
 
-        // Initial chart creation
         updateCharts();
     }
 
-    // Function to update charts based on selected time range
     function updateCharts() {
         const timeRange = document.getElementById('timeRange').value;
         const days = timeRange === 'total' ? 'total' : parseInt(timeRange);
@@ -299,34 +293,71 @@
         updateViewsChart(viewsData);
     }
 
-    // Functions to update individual charts
     function updateClonesChart(clonesData) {
         if (clonesChart) clonesChart.destroy();
+        const totalClones = clonesData.reduce((sum, row) => sum + (row.count || 0), 0);
+        const totalUniqueClones = clonesData.reduce((sum, row) => sum + (row.uniques || 0), 0);
 
-        // Calculate total clones and unique clones
-        const totalClones = clonesData.reduce((sum, row) => sum + row.count, 0);
-        const totalUniqueClones = clonesData.reduce((sum, row) => sum + row.uniques, 0);
-
-        // Update the chart container's heading
-        const clonesChartContainer = document.getElementById('clonesChart').closest('.chart-container');
-        clonesChartContainer.querySelector('h2').innerHTML = `GitHub Clones (Total: ${totalClones}, Unique: ${totalUniqueClones})`;
+        const container = document.getElementById('clonesChart').closest('.chart-container');
+        container.querySelector('h2').innerHTML = `GitHub Clones (Total: ${totalClones}, Unique: ${totalUniqueClones})`;
 
         clonesChart = createChart('clonesChart', 'line', {
             labels: clonesData.map(row => row.date),
             datasets: [
                 {
                     label: 'Count',
-                    data: clonesData.map(row => row.count),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
+                    data: clonesData.map(row => row.count || 0),
+                    borderColor: 'rgb(46, 160, 67)',
+                    backgroundColor: 'rgba(46, 160, 67, 0.1)',
+                    tension: 0.15
                 },
                 {
                     label: 'Uniques',
-                    data: clonesData.map(row => row.uniques),
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1
+                    data: clonesData.map(row => row.uniques || 0),
+                    borderColor: 'rgb(137, 87, 229)',
+                    backgroundColor: 'rgba(137, 87, 229, 0.1)',
+                    tension: 0.15
                 }
             ]
+        }, {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        });
+    }
+
+    function updateViewsChart(viewsData) {
+        if (viewsChart) viewsChart.destroy();
+        const totalViews = viewsData.reduce((sum, row) => sum + (row.count || 0), 0);
+        const totalUniqueViews = viewsData.reduce((sum, row) => sum + (row.uniques || 0), 0);
+
+        const container = document.getElementById('viewsChart').closest('.chart-container');
+        container.querySelector('h2').innerHTML = `GitHub Views (Total: ${totalViews}, Unique: ${totalUniqueViews})`;
+
+        viewsChart = createChart('viewsChart', 'line', {
+            labels: viewsData.map(row => row.date),
+            datasets: [
+                {
+                    label: 'Views',
+                    data: viewsData.map(row => row.count || 0),
+                    borderColor: 'rgb(9, 105, 218)',
+                    backgroundColor: 'rgba(9, 105, 218, 0.1)',
+                    tension: 0.15
+                },
+                {
+                    label: 'Unique Views',
+                    data: viewsData.map(row => row.uniques || 0),
+                    borderColor: 'rgb(207, 34, 46)',
+                    backgroundColor: 'rgba(207, 34, 46, 0.1)',
+                    tension: 0.15
+                }
+            ]
+        }, {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
         });
     }
 
@@ -334,41 +365,26 @@
         if (pathsChart) pathsChart.destroy();
         const accumulatedPaths = {};
 
-        // Accumulate paths from all dates
         pathsData.forEach(row => {
             for (let i = 1; i <= 10; i++) {
                 if (row[`path_${i}`] && row[`path_${i}_count`]) {
                     let path = row[`path_${i}`];
-                    path = path.replace(new RegExp(`^/piebro/${currentDataSource}`), '') || '/';
+                    path = path.replace(new RegExp(`^/${OWNER}/${currentDataSource}`), '') || '/';
                     const count = parseInt(row[`path_${i}_count`]);
                     accumulatedPaths[path] = (accumulatedPaths[path] || 0) + count;
                 }
             }
         });
 
-        // Sort paths by count
-        const sortedPaths = Object.entries(accumulatedPaths)
-            .sort((a, b) => b[1] - a[1]);
-
-        // Prepare data for the chart
-        let pathLabels, pathCounts;
-        if (sortedPaths.length > 15) {
-            pathLabels = sortedPaths.slice(0, 15).map(([path]) => path);
-            pathLabels.push('Other');
-            // the data is divided by 13, because the paths and referrers are a snapshot each day of the last 14 days
-            pathCounts = sortedPaths.slice(0, 15).map(([_, count]) => Math.ceil(count / 13));
-            const otherPaths = Math.ceil(sortedPaths.slice(15).reduce((sum, [_, count]) => sum + count, 0) / 13);
-            pathCounts.push(otherPaths);
-        } else {
-            pathLabels = sortedPaths.map(([path]) => path);
-            pathCounts = sortedPaths.map(([_, count]) => Math.ceil(count / 13));
-        }
+        const sortedPaths = Object.entries(accumulatedPaths).sort((a, b) => b[1] - a[1]);
+        let pathLabels = sortedPaths.map(([p]) => p);
+        let pathCounts = sortedPaths.map(([_, c]) => c);
 
         pathsChart = createChart('pathsChart', 'pie', {
-            labels: pathLabels,
+            labels: pathLabels.length ? pathLabels : ['None recorded'],
             datasets: [{
                 label: 'Path Views',
-                data: pathCounts,
+                data: pathCounts.length ? pathCounts : [1],
                 backgroundColor: PIE_CHART_COLORS
             }]
         });
@@ -378,7 +394,6 @@
         if (referrersChart) referrersChart.destroy();
         const accumulatedReferrers = {};
 
-        // Accumulate referrers from all dates
         referrersData.forEach(row => {
             for (let i = 1; i <= 10; i++) {
                 if (row[`ref_${i}`] && row[`ref_${i}_uniques`]) {
@@ -389,64 +404,19 @@
             }
         });
 
-        // Sort referrers by unique count
-        const sortedReferrers = Object.entries(accumulatedReferrers)
-            .sort((a, b) => b[1] - a[1]);
-
-        // Prepare data for the chart
-        let referrerLabels, referrerCounts;
-        if (sortedReferrers.length > 15) {
-            referrerLabels = sortedReferrers.slice(0, 15).map(([referrer]) => referrer);
-            referrerLabels.push('Other');
-            referrerCounts = sortedReferrers.slice(0, 15).map(([_, count]) => Math.ceil(count / 14));
-            const otherReferrers = Math.ceil(sortedReferrers.slice(15).reduce((sum, [_, count]) => sum + count, 0) / 14);
-            referrerCounts.push(otherReferrers);
-        } else {
-            referrerLabels = sortedReferrers.map(([referrer]) => referrer);
-            referrerCounts = sortedReferrers.map(([_, count]) => Math.ceil(count / 14));
-        }
+        const sortedReferrers = Object.entries(accumulatedReferrers).sort((a, b) => b[1] - a[1]);
+        let referrerLabels = sortedReferrers.map(([r]) => r);
+        let referrerCounts = sortedReferrers.map(([_, c]) => c);
 
         referrersChart = createChart('referrersChart', 'pie', {
-            labels: referrerLabels,
+            labels: referrerLabels.length ? referrerLabels : ['None recorded'],
             datasets: [{
                 label: 'Unique Referrers',
-                data: referrerCounts,
+                data: referrerCounts.length ? referrerCounts : [1],
                 backgroundColor: PIE_CHART_COLORS
             }]
         });
     }
-
-    function updateViewsChart(viewsData) {
-        if (viewsChart) viewsChart.destroy();
-
-        // Calculate total views and unique views
-        const totalViews = viewsData.reduce((sum, row) => sum + row.count, 0);
-        const totalUniqueViews = viewsData.reduce((sum, row) => sum + row.uniques, 0);
-
-        // Update the chart container's heading
-        const viewsChartContainer = document.getElementById('viewsChart').closest('.chart-container');
-        viewsChartContainer.querySelector('h2').innerHTML = `GitHub Views (Total: ${totalViews}, Unique: ${totalUniqueViews})`;
-
-        viewsChart = createChart('viewsChart', 'line', {
-            labels: viewsData.map(row => row.date),
-            datasets: [
-                {
-                    label: 'Views',
-                    data: viewsData.map(row => row.count),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                },
-                {
-                    label: 'Unique Views',
-                    data: viewsData.map(row => row.uniques),
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1
-                }
-            ]
-        });
-    }
-
-    let previewScrollPosition = 0;
 
     function showDashboard(repo) {
         previewScrollPosition = window.scrollY;
@@ -456,14 +426,14 @@
         currentDataSource = repo;
         const repoLink = document.getElementById('repoLink');
         repoLink.textContent = repo;
-        repoLink.href = `https://github.com/piebro/${repo}`;
+        repoLink.href = `https://github.com/${OWNER}/${repo}`;
         loadDataAndCreateCharts();
         history.pushState({view: 'dashboard', repo: repo}, '', `#${repo}`);
         window.scrollTo(0, 0);
     }
 
     function showPreview() {
-        document.getElementById('previewView').style.display = 'flex';
+        document.getElementById('previewView').style.display = 'block';
         document.getElementById('dashboardView').style.display = 'none';
         document.getElementById('mainHeader').style.display = 'block';
         history.pushState({view: 'preview'}, '', '#preview');
@@ -478,18 +448,30 @@
         }
     });
 
-    // Initialize the page
-    document.querySelectorAll('.preview-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const imgSrc = item.querySelector('img').src;
-            const filename = imgSrc.split('/').pop();
-            const dataSource = filename.replace('.webp', '');
-            this.showDashboard(dataSource);
+    function initPreviewGrid() {
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = '';
+        REPOSITORIES.forEach(repo => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.onclick = () => showDashboard(repo);
+            item.innerHTML = `
+                <img src="preview_plots/${repo}.webp" alt="${repo} traffic preview" onerror="this.src='https://via.placeholder.com/700x350/ffffff/0969da?text=${repo}+Traffic+%26+Clones'"/>
+                <div class="click-hint">Click to inspect views, clones, paths & referrers →</div>
+            `;
+            grid.appendChild(item);
         });
-    });
-    showPreview();
+    }
 
-    loadDataAndCreateCharts();
+    // Initialize
+    initPreviewGrid();
+    if (window.location.hash && window.location.hash !== '#preview') {
+        const repo = window.location.hash.substring(1);
+        if (REPOSITORIES.includes(repo)) showDashboard(repo);
+        else showPreview();
+    } else {
+        showPreview();
+    }
     </script>
 </body>
 </html>

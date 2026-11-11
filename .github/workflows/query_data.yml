@@ -28,10 +28,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python query_github_traffic_data.py
 
+      - name: Generate Preview Plots
+        run: python create_preview_plots.py
+
       - name: Commit and Push
         run: |
           git config --local user.email "noreply@github.com"
-          git config --local user.name "Bot"
-          git add data/*
-          git commit -m "data update"
-          git push
+          git config --local user.name "github-actions[bot]"
+          git add data/* preview_plots/*
+          git diff --staged --quiet || (git commit -m "chore: daily traffic and plot update" && git push)
